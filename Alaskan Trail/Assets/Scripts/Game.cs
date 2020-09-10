@@ -11,6 +11,7 @@ public class Game : MonoBehaviour {
 	// Menus
 	public GameObject inventoryMenu;
 	public ListItem listItem;
+    public RectTransform itemSet;
 
     // Start is called before the first frame update
     void Start () {
