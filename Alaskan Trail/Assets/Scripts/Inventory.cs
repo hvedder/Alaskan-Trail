@@ -65,6 +65,7 @@ public class Inventory : MonoBehaviour {
     		GameObject newItem = (GameObject)Instantiate(Game.instance.listItem.gameObject, Vector3.zero, new Quaternion(0, 0, 0, 0));
     		newItem.SetActive(true);
     		newItem.transform.SetParent(Game.instance.listItem.transform.parent);
+    		newItem.transform.localScale = new Vector3(1, 1, 1);
 
     		ListItem newListItem = newItem.GetComponent<ListItem>();
     		InventoryItem currentItem = Game.instance.items[item.Key];
