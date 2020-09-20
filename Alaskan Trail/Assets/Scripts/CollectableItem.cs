@@ -8,7 +8,6 @@ public class CollectableItem : MonoBehaviour {
    	
    	void OnTriggerEnter (Collider other) {
 
-   		// Debug.Log("Stick Trigger");
 
    		if (other.tag != "Player") {
    			return;
@@ -18,4 +17,5 @@ public class CollectableItem : MonoBehaviour {
 
    		Destroy(gameObject);
    	}
+
 }

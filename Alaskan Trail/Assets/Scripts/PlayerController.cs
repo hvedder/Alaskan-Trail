@@ -81,6 +81,7 @@ public class PlayerController : MonoBehaviour {
         }
 
         rb.AddForce(new Vector3(0, -30, 0));
+
     }
 
     void LateUpdate () {
