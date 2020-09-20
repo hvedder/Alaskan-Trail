@@ -14,6 +14,7 @@ public class PlayerController : MonoBehaviour {
     public Inventory inventory;
 
 	private Rigidbody rb;
+    private Vector3 moveVector;
 	
     // Start is called before the first frame update
     void Start () {
@@ -55,21 +56,38 @@ public class PlayerController : MonoBehaviour {
 
     void FixedUpdate () {
 
+        bool moving = false;
+
+        moveVector = Vector3.zero;
+
         // Move Buttons
         if (Input.GetKey("w")) {
             Move(new Vector3(0, 0, 1));
+            moving = true;
         }
 
         if (Input.GetKey("s")) {
             Move(new Vector3(0, 0, -1));
+            moving = true;
         }
 
         if (Input.GetKey("a")) {
             Move(new Vector3(-1, 0, 0));
+            moving = true;
         }
 
         if (Input.GetKey("d")) {
             Move(new Vector3(1, 0, 0));
+            moving = true;
+        }
+
+        rb.velocity = new Vector3(moveVector.x * speed, rb.velocity.y, moveVector.z * speed);
+
+        if (moving) {
+            rb.constraints = RigidbodyConstraints.FreezeRotation;
+        }
+        else {
+            rb.constraints = RigidbodyConstraints.FreezeRotation | RigidbodyConstraints.FreezePositionX | RigidbodyConstraints.FreezePositionZ;
         }
 
         // Jump Button
@@ -80,8 +98,12 @@ public class PlayerController : MonoBehaviour {
             jumped = false;
         }
 
-        rb.AddForce(new Vector3(0, -30, 0));
-
+        if (grounded && moving) {
+            rb.AddForce(new Vector3(0, -10, 0));
+        }
+        else {
+            rb.AddForce(new Vector3(0, -30, 0));
+        }
     }
 
     void LateUpdate () {
@@ -101,9 +123,11 @@ public class PlayerController : MonoBehaviour {
 
     // Moves the player in the given direction
     private void Move (Vector3 direction) {
-        Vector3 moveVector = Vector3.zero + (transform.right * direction.x) + (transform.up * direction.y) + (transform.forward * direction.z);
+        moveVector += Vector3.zero + (transform.right * direction.x) + (transform.up * direction.y) + (transform.forward * direction.z);
 
-        rb.MovePosition(transform.position + (moveVector * speed));
+        // rb.MovePosition(transform.position + (moveVector * speed));
+
+        // rb.velocity = new Vector3(moveVector.x * speed, rb.velocity.y, moveVector.z * speed);
     }
 
     private void Jump () {
