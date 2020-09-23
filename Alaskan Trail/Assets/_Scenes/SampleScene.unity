@@ -924,6 +924,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 66cf92f3d33b44afab3d3778c64bce5f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  chunkRadius: 7
   items:
   - itemName: Axe
     itemID: 0
@@ -941,6 +942,7 @@ MonoBehaviour:
     description: A literal rock.
     inventoryImage: {fileID: 21300000, guid: 5e7120d2c2cff43c585597b2452c822d, type: 3}
     itemModel: {fileID: 0}
+  mapGenerator: {fileID: 1044137044}
   inventoryMenu: {fileID: 2008375029}
   listItem: {fileID: 1123458935}
   itemSet: {fileID: 2118926672}
@@ -1311,7 +1313,7 @@ Light:
     m_Type: 2
     m_Resolution: -1
     m_CustomResolution: -1
-    m_Strength: 0.5
+    m_Strength: 0.25
     m_Bias: 0.05
     m_NormalBias: 0.4
     m_NearPlane: 0.2
@@ -2118,7 +2120,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1261631294}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 92, y: 100, z: 54}
+  m_LocalPosition: {x: 300, y: 150, z: 300}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 418993471}
@@ -2141,6 +2143,7 @@ MonoBehaviour:
   speed: 10
   grounded: 0
   jumped: 0
+  mapPos: {x: 0, y: 0}
   mainCam: {fileID: 963194227}
   inventory: {fileID: 0}
 --- !u!54 &1261631298

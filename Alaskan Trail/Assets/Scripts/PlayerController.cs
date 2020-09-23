@@ -9,6 +9,8 @@ public class PlayerController : MonoBehaviour {
     public bool grounded;
     public bool jumped;
 
+    public Vector2Int mapPos;
+
     public Camera mainCam;
 
     public Inventory inventory;
@@ -27,6 +29,9 @@ public class PlayerController : MonoBehaviour {
 
         Cursor.visible = false;
         Screen.lockCursor = true;
+
+        mapPos = GetMapPos();
+        Game.UpdateChunks(mapPos);
     }
 
     // Update is called once per frame
@@ -119,6 +124,14 @@ public class PlayerController : MonoBehaviour {
         mainCam.transform.localEulerAngles = new Vector3(xRotation, 0, 0);
 
         transform.eulerAngles += new Vector3(0, Input.GetAxis("Mouse X") * 3, 0);
+
+        Vector2Int currentMapPos = GetMapPos();
+
+        if (currentMapPos != mapPos) {
+            Game.UpdateChunks(currentMapPos);
+        }
+
+        mapPos = currentMapPos;
     }
 
     // Moves the player in the given direction
@@ -141,6 +154,17 @@ public class PlayerController : MonoBehaviour {
         rb.AddForce(new Vector3(0, 10, 0), ForceMode.Impulse);
 
         jumped = true;
+    }
+
+    private Vector2Int GetMapPos () {
+        float planeSize = Game.instance.mapGenerator.planeScale * 10;
+
+        int xPos = (int)Mathf.Floor( (transform.position.x + (planeSize / 2.0f)) / planeSize );
+        int zPos = (int)Mathf.Floor( (transform.position.z + (planeSize / 2.0f)) / planeSize );
+
+        Vector2Int currentMapPos = new Vector2Int(xPos, zPos);
+    
+        return currentMapPos;
     }
 }
 

@@ -15,7 +15,7 @@ public class MapGenerator : MonoBehaviour {
 
     // Start is called before the first frame update
     void Start () {
-        GenerateMap(20, 20, 11, 11, 25);
+        GenerateMap(50, 50, 11, 11, 25);
     }
 
     // Update is called once per frame
@@ -73,16 +73,23 @@ public class MapGenerator : MonoBehaviour {
     			SetVertexHeights(mapPlanes[x, z], heightMap);
 
                 mapPlanes[x, z].transform.SetParent(terrain.transform);
+                // mapPlanes[x, z].SetActive(false);
     		}
     	}
 
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 20; i++) {
             int xPos = Random.Range(0, amountX);
             int zPos = Random.Range(0, amountZ);
 
             GameObject tempPlane = mapPlanes[xPos, zPos];
 
-            GenerateTrees(new Vector3(tempPlane.transform.position.x, 60, tempPlane.transform.position.z), 250, 20);
+            GenerateTrees(new Vector3(tempPlane.transform.position.x, 60, tempPlane.transform.position.z), 350, 15);
+        }
+
+        for (int x = 0; x < amountX; x++) {
+            for (int z = 0; z < amountZ; z++) {
+                mapPlanes[x, z].SetActive(false);
+            }
         }
     }
 
@@ -178,10 +185,16 @@ public class MapGenerator : MonoBehaviour {
 
             for (int i = 0; i < density; i++) {
                 int index = Random.Range(0, vertices.Length);
+
+                if (vertices[index].y / heightScale < 0.7f) {
+                    continue;
+                }
+
                 Vector3 treePos = col.transform.position + new Vector3(vertices[index].x * planeScale, vertices[index].y * planeScale / 2, vertices[index].z * planeScale);
 
                 GameObject newTree = (GameObject)Instantiate(tree, treePos, new Quaternion(0, 0, 0, 0));
                 newTree.transform.localScale = new Vector3(3, Random.Range(3.0f, 4.0f), 3);
+                newTree.transform.SetParent(col.transform);
             }
         }
     }
@@ -198,7 +211,7 @@ public class MapGenerator : MonoBehaviour {
     	}
 
     	return waveSet;
-    } 
+    }
 }
 
 public class Wave {

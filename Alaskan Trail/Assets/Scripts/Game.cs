@@ -6,7 +6,11 @@ public class Game : MonoBehaviour {
 
 	public static Game instance;
 
+    public int chunkRadius;
+
 	public InventoryItem[] items;
+
+    public MapGenerator mapGenerator;
 
 	// Menus
 	public GameObject inventoryMenu;
@@ -27,4 +31,42 @@ public class Game : MonoBehaviour {
     void Update () {
         
     }
+
+    public static void UpdateChunks (Vector2Int mapPos) {
+        for (int x = mapPos.x - instance.chunkRadius - 1; x <= mapPos.x + instance.chunkRadius + 1; x++) {
+            for (int z = mapPos.y - instance.chunkRadius - 1; z <= mapPos.y + instance.chunkRadius + 1; z++) {
+                if (x < 0 || x >= instance.mapGenerator.mapPlanes.GetLength(0)) {
+                    continue;
+                }
+                else if (z < 0 || z >= instance.mapGenerator.mapPlanes.GetLength(1)) {
+                    continue;
+                }
+
+                if (x < mapPos.x - instance.chunkRadius || x > mapPos.x + instance.chunkRadius || z < mapPos.y - instance.chunkRadius || z > mapPos.y + instance.chunkRadius) {
+                    instance.mapGenerator.mapPlanes[x, z].SetActive(false);
+                }
+                else {
+                    instance.mapGenerator.mapPlanes[x, z].SetActive(true);
+                }
+            }
+        }
+    }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
