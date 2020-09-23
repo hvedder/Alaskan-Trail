@@ -5,8 +5,11 @@ using UnityEngine;
 public class MapGenerator : MonoBehaviour {
 
 	public float heightScale;
+    public float planeScale;
 
 	public GameObject plane;
+    public GameObject terrain;
+    public GameObject tree;
 
 	public GameObject[,] mapPlanes;
 
@@ -31,8 +34,17 @@ public class MapGenerator : MonoBehaviour {
     	for (int x = 0; x < sizeX; x++) {
     		for (int z = 0; z < sizeZ; z++) {
     			float height = heightMap[x, z];
+                float randomX = 0;
+                float randomY = 0;
+                float randomZ = 0;
 
-    			vertices[vertex] = new Vector3(vertices[vertex].x, height * heightScale, vertices[vertex].z);
+                if (x > 0 && x < sizeX - 1 && z > 0 && z < sizeZ - 1 && height > 0.7f) {
+                    randomX = Random.Range(-0.25f, 0.25f);
+                    randomY = Random.Range(-0.15f, 0.15f);
+                    randomZ = Random.Range(-0.25f, 0.25f);
+                }
+
+    			vertices[vertex] = new Vector3(vertices[vertex].x + randomX, (height * heightScale) + randomY, vertices[vertex].z + randomZ);
     			vertex++;
     		}
     	}
@@ -51,14 +63,27 @@ public class MapGenerator : MonoBehaviour {
     	for (int x = 0; x < amountX; x++) {
     		for (int z = 0; z < amountZ; z++) {
     			mapPlanes[x, z] = (GameObject)Instantiate(plane, Vector3.zero, new Quaternion(0, 0, 0, 0));
+                mapPlanes[x, z].transform.localScale = new Vector3(planeScale, planeScale / 2.0f, planeScale);
+
     			float[,] heightMap = GenerateHeightMap(sizeX, sizeZ, scale, 10 * x, 10 * z, waves);
     			Texture2D planeTexture = GenerateTexture(heightMap);
 
-    			mapPlanes[x, z].transform.position += new Vector3(10 * x, 0, 10 * z);
+    			mapPlanes[x, z].transform.position += new Vector3(10 * x * planeScale, 0, 10 * z * planeScale);
     			mapPlanes[x, z].GetComponent<MeshRenderer>().material.mainTexture = planeTexture;
     			SetVertexHeights(mapPlanes[x, z], heightMap);
+
+                mapPlanes[x, z].transform.SetParent(terrain.transform);
     		}
     	}
+
+        for (int i = 0; i < 5; i++) {
+            int xPos = Random.Range(0, amountX);
+            int zPos = Random.Range(0, amountZ);
+
+            GameObject tempPlane = mapPlanes[xPos, zPos];
+
+            GenerateTrees(new Vector3(tempPlane.transform.position.x, 60, tempPlane.transform.position.z), 250, 20);
+        }
     }
 
     public float[,] GenerateHeightMap (int sizeX, int sizeZ, float scale, float offsetX, float offsetZ, Wave[] waves) {
@@ -83,14 +108,26 @@ public class MapGenerator : MonoBehaviour {
     			noise /= normalization;
     			noise *= 0.95f;
 
-    			if (noise > 0.7f) {
-    				noise *= 2f;
+                noise *= 2;
+
+    			if (noise > 1.1f) {
+    				noise *= 1.5f;
     			}
-    			else if (noise > 0.65f) {
-    				noise *= 1.25f;
+                else if (noise > 1.0f) {
+                    noise *= 1.35f;
+                }
+                else if (noise > 0.92f) {
+                    noise *= 1.2f;
+                }
+    			else if (noise > 0.9f) {
+    				noise *= 1.1f;
     			}
 
-    			heightMap[x, z] = noise * 2;
+                if (noise < 0.7f) {
+                    noise = 0.675f;
+                }
+
+    			heightMap[x, z] = noise;
     		}
     	}
 
@@ -105,13 +142,18 @@ public class MapGenerator : MonoBehaviour {
 
     	for (int x = 0; x < textureX; x++) {
     		for (int z = 0; z < textureZ; z++) {
-    			Color pixelColor = new Color(1, 1, 1, 1);
+                float randomDarkness = Random.Range(0, 0.1f);
+
+    			Color pixelColor = new Color(1 - randomDarkness, 1 - randomDarkness, 1 - randomDarkness, 1);
     			
-    			if (heightMap[x, z] < 0.9f) {
-    				pixelColor = new Color(0, 0.6f, 0.1f, 1);
+                if (heightMap[x, z] < 0.7f) {
+                    pixelColor = new Color(0.7f, 0.9f, 0.9f, 1);
+                }
+    			else if (heightMap[x, z] < 0.85f) {
+    				pixelColor = new Color(0, 0.6f + Random.Range(-0.1f, 0.1f), 0.1f, 1);
     			}
 				else if (heightMap[x, z] < 0.95f) {
-					pixelColor = new Color(0.5f, 0.25f, 0.125f, 1);
+					pixelColor = new Color(0.35f, 0.25f, 0.125f, 1);
     			}
 
     			newTexture.SetPixel(z, x, pixelColor);
@@ -122,6 +164,26 @@ public class MapGenerator : MonoBehaviour {
     	newTexture.Apply();
 
     	return newTexture;
+    }
+
+    private void GenerateTrees (Vector3 pos, float radius, int density) {
+        Collider[] colliders = Physics.OverlapSphere(pos, radius);
+
+        foreach (Collider col in colliders) {
+            if (col.tag != "Ground") {
+                continue;
+            }
+
+            Vector3[] vertices = col.GetComponent<MeshFilter>().mesh.vertices;
+
+            for (int i = 0; i < density; i++) {
+                int index = Random.Range(0, vertices.Length);
+                Vector3 treePos = col.transform.position + new Vector3(vertices[index].x * planeScale, vertices[index].y * planeScale / 2, vertices[index].z * planeScale);
+
+                GameObject newTree = (GameObject)Instantiate(tree, treePos, new Quaternion(0, 0, 0, 0));
+                newTree.transform.localScale = new Vector3(3, Random.Range(3.0f, 4.0f), 3);
+            }
+        }
     }
 
     private Wave[] GenerateWaves (int waveCount) {
