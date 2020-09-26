@@ -43,8 +43,8 @@ public class Inventory : MonoBehaviour {
     		int currentAmount = items[itemID];
     		currentAmount += amount;
 
-    		if (currentAmount > 999) {
-    			currentAmount = 999;
+    		if (currentAmount > Game.instance.items[itemID].maxStack) {
+    			currentAmount = Game.instance.items[itemID].maxStack;
     		}
 
     		items.Remove(itemID);
@@ -100,7 +100,29 @@ public class InventoryItem {
 	public string itemName;
 	public int itemID;
 	public string description;
+    public int maxStack;
 
 	public Sprite inventoryImage;
 	public GameObject itemModel;
 }
+
+public interface HeldItem {
+
+    void LeftClick ();
+
+    void RightClick ();
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+

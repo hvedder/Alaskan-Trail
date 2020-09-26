@@ -13,14 +13,15 @@ public class MapGenerator : MonoBehaviour {
 
 	public GameObject[,] mapPlanes;
 
+    private Color32[] whites;
+    private Color32[] browns;
+    private Color32[] greens;
+    private Color32[] blues;
+
     // Start is called before the first frame update
     void Start () {
-        GenerateMap(50, 50, 11, 11, 25);
-    }
-
-    // Update is called once per frame
-    void Update () {
-        
+        InitializeColors();
+        GenerateMap(30, 30, 11, 11, 25);
     }
 
     public void SetVertexHeights (GameObject vPlane, float[,] heightMap) {
@@ -50,8 +51,8 @@ public class MapGenerator : MonoBehaviour {
     	}
 
     	meshFilter.mesh.vertices = vertices;
-    	meshFilter.mesh.RecalculateBounds();
-    	meshFilter.mesh.RecalculateNormals();
+    	// meshFilter.mesh.RecalculateBounds();
+    	// meshFilter.mesh.RecalculateNormals();
     	vPlane.GetComponent<MeshCollider>().sharedMesh = meshFilter.mesh;
     }
 
@@ -66,14 +67,23 @@ public class MapGenerator : MonoBehaviour {
                 mapPlanes[x, z].transform.localScale = new Vector3(planeScale, planeScale / 2.0f, planeScale);
 
     			float[,] heightMap = GenerateHeightMap(sizeX, sizeZ, scale, 10 * x, 10 * z, waves);
-    			Texture2D planeTexture = GenerateTexture(heightMap);
+    			// Texture2D planeTexture = GenerateTexture(heightMap);
 
     			mapPlanes[x, z].transform.position += new Vector3(10 * x * planeScale, 0, 10 * z * planeScale);
-    			mapPlanes[x, z].GetComponent<MeshRenderer>().material.mainTexture = planeTexture;
+    			// mapPlanes[x, z].GetComponent<MeshRenderer>().material.mainTexture = planeTexture;
     			SetVertexHeights(mapPlanes[x, z], heightMap);
 
                 mapPlanes[x, z].transform.SetParent(terrain.transform);
                 // mapPlanes[x, z].SetActive(false);
+
+                Mesh mesh = mapPlanes[x, z].GetComponent<MeshFilter>().mesh;
+
+                SplitMesh(mesh);
+                ColorTriangles(mesh);
+
+                mesh.RecalculateBounds();
+                mesh.RecalculateNormals();
+                // mapPlanes[x, z].GetComponent<MeshCollider>().sharedMesh = mesh;
     		}
     	}
 
@@ -91,6 +101,9 @@ public class MapGenerator : MonoBehaviour {
                 mapPlanes[x, z].SetActive(false);
             }
         }
+
+        // Debug.Log(mapPlanes[0, 0].GetComponent<MeshFilter>().mesh.vertexCount);
+        // Debug.Log(mapPlanes[0, 0].GetComponent<MeshCollider>().sharedMesh.vertexCount);
     }
 
     public float[,] GenerateHeightMap (int sizeX, int sizeZ, float scale, float offsetX, float offsetZ, Wave[] waves) {
@@ -173,6 +186,74 @@ public class MapGenerator : MonoBehaviour {
     	return newTexture;
     }
 
+    private void SplitMesh (Mesh mesh) {
+        Vector3[] newVerts = new Vector3[mesh.triangles.Length];
+        int[] newTriangles = new int[mesh.triangles.Length];
+
+        for (int i = 0; i < mesh.triangles.Length; i++) {
+            newVerts[i] = mesh.vertices[mesh.triangles[i]];
+            // newNorms[i] = mesh.normals[mesh.triangles[i]];
+            newTriangles[i] = i;
+        }
+
+        // mesh.Clear();
+        mesh.vertices = newVerts;
+        mesh.triangles = newTriangles;
+        // mesh.normals = newNorms;
+
+        // mesh.RecalculateBounds();
+        // mesh.RecalculateNormals();
+        // meshCollider.sharedMesh = mesh;
+    }
+
+    private void ColorTriangles (Mesh mesh) {
+        Color32[] colors = new Color32[mesh.vertices.Length];
+        // Color lightBlue = new Color(0.7f, 0.9f, 0.9f, 1);
+        // Color brown = new Color(0.35f, 0.25f, 0.125f, 1);
+        // Color green = new Color(0, 0.6f, 0.1f, 1);
+        // Color white = new Color(1, 1, 1, 1);
+
+        for (int i = 0; i < mesh.triangles.Length / 3; i++) {
+            float averageHeight = (mesh.vertices[i * 3].y + mesh.vertices[i * 3 + 1].y + mesh.vertices[i * 3 + 2].y) / 3.0f;
+            averageHeight = averageHeight / heightScale;
+            // float randomDarkness = Random.Range(0, 0.15f);
+
+            // Color color = white;
+                
+            // if (averageHeight < 0.7f) {
+            //     color = lightBlue;
+            // }
+            // else if (averageHeight < 0.85f) {
+            //     color = green;
+            // }
+            // else if (averageHeight < 0.95f) {
+            //    color = brown;
+            // }
+
+            // color = new Color(color.r - randomDarkness, color.g - randomDarkness, color.b - randomDarkness, 1);
+
+            int randomIndex = Random.Range(0, whites.Length);
+
+            Color32 color = whites[randomIndex];
+
+            if (averageHeight < 0.7f) {
+                color = blues[randomIndex];
+            }
+            else if (averageHeight < 0.85f) {
+                color = greens[randomIndex];
+            }
+            else if (averageHeight < 0.95f) {
+               color = browns[randomIndex];
+            }
+
+            colors[i * 3] = color;
+            colors[i * 3 + 1] = color;
+            colors[i * 3 + 2] = color;
+        }
+
+        mesh.colors32 = colors;
+    }
+
     private void GenerateTrees (Vector3 pos, float radius, int density) {
         Collider[] colliders = Physics.OverlapSphere(pos, radius);
 
@@ -182,6 +263,7 @@ public class MapGenerator : MonoBehaviour {
             }
 
             Vector3[] vertices = col.GetComponent<MeshFilter>().mesh.vertices;
+            List<Vector3> usedVerts = new List<Vector3>();
 
             for (int i = 0; i < density; i++) {
                 int index = Random.Range(0, vertices.Length);
@@ -189,11 +271,16 @@ public class MapGenerator : MonoBehaviour {
                 if (vertices[index].y / heightScale < 0.7f) {
                     continue;
                 }
+                if (usedVerts.Contains(vertices[index])) {
+                    continue;
+                }
+
+                usedVerts.Add(vertices[index]);
 
                 Vector3 treePos = col.transform.position + new Vector3(vertices[index].x * planeScale, vertices[index].y * planeScale / 2, vertices[index].z * planeScale);
 
                 GameObject newTree = (GameObject)Instantiate(tree, treePos, new Quaternion(0, 0, 0, 0));
-                newTree.transform.localScale = new Vector3(3, Random.Range(3.0f, 4.0f), 3);
+                newTree.transform.localScale = new Vector3(3, Random.Range(3.0f, 5.0f), 3);
                 newTree.transform.SetParent(col.transform);
             }
         }
@@ -211,6 +298,27 @@ public class MapGenerator : MonoBehaviour {
     	}
 
     	return waveSet;
+    }
+
+    private void InitializeColors () {
+        whites = new Color32[8];
+        browns = new Color32[8];
+        greens = new Color32[8];
+        blues = new Color32[8];
+
+        Color lightBlue = new Color(0.7f, 0.9f, 0.9f, 1);
+        Color brown = new Color(0.35f, 0.25f, 0.125f, 1);
+        Color green = new Color(0, 0.6f, 0.1f, 1);
+        Color white = new Color(1, 1, 1, 1);
+
+        for (int i = 0; i < 8; i++) {
+            float darkness = 0.02f * i;
+
+            whites[i] = new Color(white.r - darkness, white.g - darkness, white.b - darkness, 1);
+            browns[i] = new Color(brown.r - darkness, brown.g - darkness, brown.b - darkness, 1);
+            greens[i] = new Color(green.r - darkness, green.g - darkness, green.b - darkness, 1);
+            blues[i] = new Color(lightBlue.r - darkness, lightBlue.g - darkness, lightBlue.b - darkness, 1);
+        }
     }
 }
 

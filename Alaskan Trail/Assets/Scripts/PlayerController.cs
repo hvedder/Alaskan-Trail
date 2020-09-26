@@ -10,11 +10,13 @@ public class PlayerController : MonoBehaviour {
     public bool jumped;
 
     public Vector2Int mapPos;
+    public HeldItem heldItem;
 
     public Camera mainCam;
 
     public Inventory inventory;
 
+    public AnimatedLimb hand;
 	private Rigidbody rb;
     private Vector3 moveVector;
 	
@@ -45,6 +47,16 @@ public class PlayerController : MonoBehaviour {
         	else {
         		inventory.Open();
         	}
+        }
+
+        if (Input.GetMouseButtonDown(0)) {
+            List<AnimationStep> steps = new List<AnimationStep>() {
+                new AnimationStep(new Vector3(-0.9f, 0.1f, 0), new Vector3(0, 0, 90), Vector3.zero, 0.3f),
+                new AnimationStep(new Vector3(0.6f, 0.1f, 0.1f), new Vector3(0, 110, 90), Vector3.zero, 0.1f),
+                new AnimationStep(0.3f)
+            };
+
+            hand.Animate(steps);
         }
 
         Collider[] colliders = Physics.OverlapSphere(transform.position, 0.25f);
@@ -88,8 +100,12 @@ public class PlayerController : MonoBehaviour {
 
         rb.velocity = new Vector3(moveVector.x * speed, rb.velocity.y, moveVector.z * speed);
 
+        // Debug.Log(moveVector);
+
         if (moving) {
-            rb.constraints = RigidbodyConstraints.FreezeRotation;
+            if (rb.constraints != RigidbodyConstraints.FreezeRotation) {
+               rb.constraints = RigidbodyConstraints.FreezeRotation;
+            }
         }
         else {
             rb.constraints = RigidbodyConstraints.FreezeRotation | RigidbodyConstraints.FreezePositionX | RigidbodyConstraints.FreezePositionZ;
@@ -123,15 +139,22 @@ public class PlayerController : MonoBehaviour {
 
         mainCam.transform.localEulerAngles = new Vector3(xRotation, 0, 0);
 
-        transform.eulerAngles += new Vector3(0, Input.GetAxis("Mouse X") * 3, 0);
+        float mouseX = Input.GetAxis("Mouse X") * 3;
 
-        Vector2Int currentMapPos = GetMapPos();
-
-        if (currentMapPos != mapPos) {
-            Game.UpdateChunks(currentMapPos);
+        if (mouseX != 0) {
+            Quaternion newRotation = Quaternion.Euler(transform.localEulerAngles.x, transform.localEulerAngles.y + mouseX, transform.localEulerAngles.z);
+            rb.MoveRotation(newRotation);
         }
 
-        mapPos = currentMapPos;
+        if (Time.frameCount % 10 == 0) {
+            Vector2Int currentMapPos = GetMapPos();
+
+            if (currentMapPos != mapPos) {
+                Game.UpdateChunks(currentMapPos);
+            }
+
+            mapPos = currentMapPos;
+        }
     }
 
     // Moves the player in the given direction

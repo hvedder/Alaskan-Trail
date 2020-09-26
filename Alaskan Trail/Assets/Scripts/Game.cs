@@ -10,6 +10,7 @@ public class Game : MonoBehaviour {
 
 	public InventoryItem[] items;
 
+    public PlayerController player;
     public MapGenerator mapGenerator;
 
 	// Menus
@@ -25,11 +26,9 @@ public class Game : MonoBehaviour {
         else {
         	instance = this;
         }
-    }
 
-    // Update is called once per frame
-    void Update () {
-        
+        Time.fixedDeltaTime = 0.02f;
+        Time.maximumDeltaTime = 0.02f;
     }
 
     public static void UpdateChunks (Vector2Int mapPos) {
