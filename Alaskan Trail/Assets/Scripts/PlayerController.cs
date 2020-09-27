@@ -10,6 +10,8 @@ public class PlayerController : MonoBehaviour {
     public bool jumped;
 
     public Vector2Int mapPos;
+
+    public GameObject heldObject;
     public HeldItem heldItem;
 
     public Camera mainCam;
@@ -25,12 +27,12 @@ public class PlayerController : MonoBehaviour {
     	rb = GetComponent<Rigidbody>();
         inventory = GetComponent<Inventory>();
 
-        // inventory.AddItems(0, 1);
+        inventory.AddItems(0, 1);
         // inventory.AddItems(1, 34);
         // inventory.AddItems(2, 5);
 
         Cursor.visible = false;
-        Screen.lockCursor = true;
+        Cursor.lockState = CursorLockMode.Locked;
 
         mapPos = GetMapPos();
         Game.UpdateChunks(mapPos);
@@ -50,13 +52,14 @@ public class PlayerController : MonoBehaviour {
         }
 
         if (Input.GetMouseButtonDown(0)) {
-            List<AnimationStep> steps = new List<AnimationStep>() {
-                new AnimationStep(new Vector3(-0.9f, 0.1f, 0), new Vector3(0, 0, 90), Vector3.zero, 0.3f),
-                new AnimationStep(new Vector3(0.6f, 0.1f, 0.1f), new Vector3(0, 110, 90), Vector3.zero, 0.1f),
-                new AnimationStep(0.3f)
-            };
-
-            hand.Animate(steps);
+            if (heldItem != null && !Game.instance.inventoryMenu.activeSelf) {
+                heldItem.LeftClick();
+            }
+        }
+        else if (Input.GetMouseButtonDown(1)) {
+            if (heldItem != null && !Game.instance.inventoryMenu.activeSelf) {
+                heldItem.RightClick();
+            }
         }
 
         Collider[] colliders = Physics.OverlapSphere(transform.position, 0.25f);
@@ -137,11 +140,13 @@ public class PlayerController : MonoBehaviour {
             xRotation = 270;
         }
 
-        mainCam.transform.localEulerAngles = new Vector3(xRotation, 0, 0);
+        if (!Game.instance.inventoryMenu.activeSelf) {
+            mainCam.transform.localEulerAngles = new Vector3(xRotation, 0, 0);
+        }
 
         float mouseX = Input.GetAxis("Mouse X") * 3;
 
-        if (mouseX != 0) {
+        if (mouseX != 0 && !Game.instance.inventoryMenu.activeSelf) {
             Quaternion newRotation = Quaternion.Euler(transform.localEulerAngles.x, transform.localEulerAngles.y + mouseX, transform.localEulerAngles.z);
             rb.MoveRotation(newRotation);
         }

@@ -76,10 +76,15 @@ public class Inventory : MonoBehaviour {
     		newListItem.amount.text = $"{item.Value}";
     		newListItem.description.text = currentItem.description;
 
+            newListItem.itemID = item.Key;
+
     		menuItems.Add(newItem);
 
     		yPos -= 130;
     	}
+
+        Cursor.visible = true;
+        Cursor.lockState = CursorLockMode.None;
     }
 
     // Closes the player's inventory
@@ -91,6 +96,9 @@ public class Inventory : MonoBehaviour {
     	}
 
     	menuItems.Clear();
+
+        Cursor.visible = false;
+        Cursor.lockState = CursorLockMode.Locked;
     }
 }
 
