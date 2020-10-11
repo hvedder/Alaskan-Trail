@@ -8,6 +8,7 @@ public class CollectableItem : MonoBehaviour {
 
 	public void PickUp () {
 		Game.instance.player.inventory.AddItems(itemID, 1);
+      Game.instance.player.SetActionButton(ActionButtons.None, null);
 
 		Destroy(gameObject);
 	}

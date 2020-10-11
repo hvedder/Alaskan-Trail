@@ -12,6 +12,17 @@ public enum ActionButtons {
 
 public class PlayerController : MonoBehaviour {
 
+    public float health;
+    public float maxHealth;
+
+    public float hunger;
+    public float maxHunger;
+
+    public int thirst;
+    public int maxThirst;
+
+    public float temperature;
+
     public float speed;
 
     public bool grounded;
@@ -53,6 +64,19 @@ public class PlayerController : MonoBehaviour {
 
     // Update is called once per frame
     void Update () {
+        hunger -= (Time.deltaTime * 0.00083f);
+        // hunger -= (Time.deltaTime * 5);
+        
+        if (hunger < 0) {
+            hunger = 0;
+            health -= Time.deltaTime * 0.003f;
+
+            // health -= (Time.deltaTime * 1);
+            Game.instance.playerStatus.UpdateHealth();
+        }
+
+        Game.instance.playerStatus.UpdateHunger();
+
         if (Game.instance.mapGenerated && !spawned) {
             Game.SpawnObject(gameObject, transform.position + new Vector3(0, 0, 1));
             Game.SpawnObject(Game.instance.sled.gameObject, transform.position + new Vector3(0, 0, 6));
@@ -73,6 +97,15 @@ public class PlayerController : MonoBehaviour {
         	else {
         		inventory.Open();
         	}
+        }
+
+        if (Input.GetKeyDown(KeyCode.Tab)) {
+            if (Game.instance.playerStatus.gameObject.activeSelf) {
+                Game.instance.playerStatus.CloseMenu();
+            }
+            else {
+                Game.instance.playerStatus.OpenMenu();
+            }
         }
 
         if (Input.GetKeyDown("enter") || Input.GetKeyDown("return")) {

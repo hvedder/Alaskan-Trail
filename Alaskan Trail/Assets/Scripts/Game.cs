@@ -28,6 +28,8 @@ public class Game : MonoBehaviour {
     public Text actionText1;
     public Text actionText2;
 
+    public PlayerStatus playerStatus;
+
     [Header("Prefabs")]
     public GameObject rope;
     public GameObject sledPrefab;
