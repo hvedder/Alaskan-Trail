@@ -5,17 +5,28 @@ using UnityEngine;
 public class CollectableItem : MonoBehaviour {
 
 	public int itemID;
+
+	public void PickUp () {
+		Game.instance.player.inventory.AddItems(itemID, 1);
+
+		Destroy(gameObject);
+	}
    	
    	void OnTriggerEnter (Collider other) {
-
-
    		if (other.tag != "Player") {
    			return;
    		}
 
-   		other.attachedRigidbody.GetComponent<PlayerController>().inventory.AddItems(itemID, 1);
-
-   		Destroy(gameObject);
+   		Game.instance.player.SetActionButton(ActionButtons.PickUp, gameObject);
    	}
 
+   	void OnTriggerExit (Collider other) {
+   		if (other.tag != "Player") {
+   			return;
+   		}
+
+   		if (Game.instance.player.actionObject == gameObject) {
+   			Game.instance.player.SetActionButton(ActionButtons.None, null);
+   		}
+   	}
 }

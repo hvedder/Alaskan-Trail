@@ -2,12 +2,21 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+public enum ActionButtons {
+    None = 0,
+    PickUp = 1,
+    MountSled = 2,
+    TieDog = 3,
+    UntieDogs = 4
+}
+
 public class PlayerController : MonoBehaviour {
 
     public float speed;
 
     public bool grounded;
     public bool jumped;
+    public bool mounted;
 
     public Vector2Int mapPos;
 
@@ -18,9 +27,13 @@ public class PlayerController : MonoBehaviour {
 
     public Inventory inventory;
 
+    public ActionButtons actionButton;
+    public GameObject actionObject;
+
     public AnimatedLimb hand;
 	private Rigidbody rb;
     private Vector3 moveVector;
+    private bool spawned;
 	
     // Start is called before the first frame update
     void Start () {
@@ -40,6 +53,17 @@ public class PlayerController : MonoBehaviour {
 
     // Update is called once per frame
     void Update () {
+        if (Game.instance.mapGenerated && !spawned) {
+            Game.SpawnObject(gameObject, transform.position + new Vector3(0, 0, 1));
+            Game.SpawnObject(Game.instance.sled.gameObject, transform.position + new Vector3(0, 0, 6));
+
+            for (int i = 0; i < 5; i++) {
+                GameObject newDog = (GameObject)Instantiate(Game.instance.dogPrefab, Vector3.zero, new Quaternion(0, 0, 0, 0));
+                Game.SpawnObject(newDog, transform.position + new Vector3(Random.Range(-6.0f, 6.0f), 0, Random.Range(-6.0f, 6.0f)));
+            }
+
+            spawned = true;
+        }
         
         // Inventory Button
         if (Input.GetKeyDown("e")) {
@@ -49,6 +73,10 @@ public class PlayerController : MonoBehaviour {
         	else {
         		inventory.Open();
         	}
+        }
+
+        if (Input.GetKeyDown("enter") || Input.GetKeyDown("return")) {
+            ActionButton();
         }
 
         if (Input.GetMouseButtonDown(0)) {
@@ -75,6 +103,12 @@ public class PlayerController : MonoBehaviour {
     }
 
     void FixedUpdate () {
+
+        if (mounted) {
+            Game.instance.sled.UpdateControls();
+
+            return;
+        }
 
         bool moving = false;
 
@@ -146,7 +180,7 @@ public class PlayerController : MonoBehaviour {
 
         float mouseX = Input.GetAxis("Mouse X") * 3;
 
-        if (mouseX != 0 && !Game.instance.inventoryMenu.activeSelf) {
+        if (mouseX != 0 && !Game.instance.inventoryMenu.activeSelf && !mounted) {
             Quaternion newRotation = Quaternion.Euler(transform.localEulerAngles.x, transform.localEulerAngles.y + mouseX, transform.localEulerAngles.z);
             rb.MoveRotation(newRotation);
         }
@@ -171,6 +205,34 @@ public class PlayerController : MonoBehaviour {
         // rb.velocity = new Vector3(moveVector.x * speed, rb.velocity.y, moveVector.z * speed);
     }
 
+    public void SetActionButton (ActionButtons newButton, GameObject newObject) {
+        actionButton = newButton;
+        actionObject = newObject;
+
+        string actionString = "";
+
+        switch (actionButton) {
+            case ActionButtons.PickUp:
+                actionString = "[ENTER] - pick up";
+            break;
+
+            case ActionButtons.MountSled:
+                actionString = "[ENTER] - hop on sled";
+            break;
+
+            case ActionButtons.TieDog:
+                actionString = "[ENTER] - tie dog to sled";
+            break;
+
+            case ActionButtons.UntieDogs:
+                actionString = "[ENTER] - untie the dogs";
+            break;
+        }
+
+        Game.instance.actionText1.text = actionString;
+        Game.instance.actionText2.text = actionString;
+    }
+
     private void Jump () {
         if (!grounded) {
             return;
@@ -193,6 +255,28 @@ public class PlayerController : MonoBehaviour {
         Vector2Int currentMapPos = new Vector2Int(xPos, zPos);
     
         return currentMapPos;
+    }
+
+    private void ActionButton () {
+        switch (actionButton) {
+            case ActionButtons.PickUp:
+                actionObject.GetComponent<CollectableItem>().PickUp();
+            break;
+
+            case ActionButtons.MountSled:
+                actionObject.GetComponent<Sled>().Mount(gameObject, 0);
+            break;
+
+            case ActionButtons.TieDog:
+                Game.instance.sled.AddDog(actionObject.GetComponent<Dog>());
+                SetActionButton(ActionButtons.None, null);
+            break;
+
+            case ActionButtons.UntieDogs:
+                Game.instance.sled.FreeDogs();
+                SetActionButton(ActionButtons.None, null);
+            break;
+        }
     }
 }
 

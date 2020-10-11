@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class Game : MonoBehaviour {
 
@@ -13,10 +14,24 @@ public class Game : MonoBehaviour {
     public PlayerController player;
     public MapGenerator mapGenerator;
 
-	// Menus
+    public bool mapGenerated;
+
+    public Sled sled;
+    public Dog[] dogs;
+
+    public GameObject pointer;
+
+	[Header("Menus")]
 	public GameObject inventoryMenu;
 	public ListItem listItem;
     public RectTransform itemSet;
+    public Text actionText1;
+    public Text actionText2;
+
+    [Header("Prefabs")]
+    public GameObject rope;
+    public GameObject sledPrefab;
+    public GameObject dogPrefab;
 
     // Start is called before the first frame update
     void Start () {
@@ -49,6 +64,25 @@ public class Game : MonoBehaviour {
                 }
             }
         }
+    }
+
+    public static void SpawnObject (GameObject spawnObject, Vector3 pos) {
+        RaycastHit hit;
+        bool foundGround = Physics.Raycast(new Vector3(pos.x, 500, pos.z), new Vector3(0, -1, 0), out hit, 500);
+
+        if (foundGround) {
+            spawnObject.transform.position = new Vector3(pos.x, hit.point.y + 2, pos.z);
+        }
+        else {
+            spawnObject.transform.position = new Vector3(pos.x, 500, pos.z);
+        }
+    }
+
+    public static Vector3 Point (GameObject source, GameObject destination) {
+        instance.pointer.transform.position = source.transform.position;
+        instance.pointer.transform.LookAt(destination.transform);
+
+        return instance.pointer.transform.eulerAngles;
     }
 }
 

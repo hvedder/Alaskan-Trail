@@ -33,10 +33,11 @@ public class Axe : MonoBehaviour, HeldItem {
     			col.transform.SetParent(null);
     			col.gameObject.AddComponent<Rigidbody>();
     			Rigidbody tempRB = col.GetComponent<Rigidbody>();
-    			tempRB.mass = 10;
-    			tempRB.centerOfMass = new Vector3(0, 2, 0);
+    			tempRB.mass = 8;
+    			tempRB.centerOfMass = new Vector3(0, 4, 0);
     			tempRB.velocity = new Vector3(tempRB.velocity.x, 0, tempRB.velocity.z);
     			tempRB.angularVelocity = new Vector3(tempRB.angularVelocity.x, 0, tempRB.angularVelocity.z);
+                tempRB.angularDrag = 5;
 
     			col.gameObject.AddComponent<Resource>();
     			Resource tempRC = col.GetComponent<Resource>();

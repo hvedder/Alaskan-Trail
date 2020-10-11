@@ -22,6 +22,8 @@ public class MapGenerator : MonoBehaviour {
     void Start () {
         InitializeColors();
         GenerateMap(30, 30, 11, 11, 25);
+
+        Game.instance.mapGenerated = true;
     }
 
     public void SetVertexHeights (GameObject vPlane, float[,] heightMap) {
@@ -41,7 +43,7 @@ public class MapGenerator : MonoBehaviour {
 
                 if (x > 0 && x < sizeX - 1 && z > 0 && z < sizeZ - 1 && height > 0.7f) {
                     randomX = Random.Range(-0.25f, 0.25f);
-                    randomY = Random.Range(-0.15f, 0.15f);
+                    // randomY = Random.Range(-0.15f, 0.15f);
                     randomZ = Random.Range(-0.25f, 0.25f);
                 }
 
