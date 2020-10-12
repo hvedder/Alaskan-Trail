@@ -7,7 +7,8 @@ public enum ActionButtons {
     PickUp = 1,
     MountSled = 2,
     TieDog = 3,
-    UntieDogs = 4
+    UntieDogs = 4,
+    DrinkWater = 5
 }
 
 public class PlayerController : MonoBehaviour {
@@ -18,8 +19,8 @@ public class PlayerController : MonoBehaviour {
     public float hunger;
     public float maxHunger;
 
-    public int thirst;
-    public int maxThirst;
+    public float thirst;
+    public float maxThirst;
 
     public float temperature;
 
@@ -45,6 +46,9 @@ public class PlayerController : MonoBehaviour {
 	private Rigidbody rb;
     private Vector3 moveVector;
     private bool spawned;
+
+    private bool underWater;
+    private bool thirstRange;
 	
     // Start is called before the first frame update
     void Start () {
@@ -60,11 +64,17 @@ public class PlayerController : MonoBehaviour {
 
         mapPos = GetMapPos();
         Game.UpdateChunks(mapPos);
+
+        if (transform.position.y < 52.2f) {
+            thirstRange = true;
+            SetActionButton(ActionButtons.DrinkWater, null);
+        }
     }
 
     // Update is called once per frame
     void Update () {
-        hunger -= (Time.deltaTime * 0.00083f);
+        hunger -= (Time.deltaTime * 0.002f);
+        thirst -= (Time.deltaTime * 0.004f);
         // hunger -= (Time.deltaTime * 5);
         
         if (hunger < 0) {
@@ -75,7 +85,16 @@ public class PlayerController : MonoBehaviour {
             Game.instance.playerStatus.UpdateHealth();
         }
 
+        if (thirst < 0) {
+            thirst = 0;
+            health -= Time.deltaTime * 0.003f;
+
+            // health -= (Time.deltaTime * 1);
+            Game.instance.playerStatus.UpdateHealth();
+        }
+
         Game.instance.playerStatus.UpdateHunger();
+        Game.instance.playerStatus.UpdateThirst();
 
         if (Game.instance.mapGenerated && !spawned) {
             Game.SpawnObject(gameObject, transform.position + new Vector3(0, 0, 1));
@@ -133,6 +152,26 @@ public class PlayerController : MonoBehaviour {
         }
 
         grounded = checkGround;
+
+        if (!underWater && transform.position.y < 51) {
+            underWater = true;
+            Game.ToggleWater();
+        }
+
+        if (underWater && transform.position.y >= 51) {
+            underWater = false;
+            Game.ToggleWater();
+        }
+
+        if (!thirstRange && transform.position.y < 52.2f) {
+            thirstRange = true;
+            SetActionButton(ActionButtons.DrinkWater, null);
+        }
+
+        if (thirstRange && transform.position.y >= 52.2f) {
+            thirstRange = false;
+            SetActionButton(ActionButtons.None, null);
+        }
     }
 
     void FixedUpdate () {
@@ -260,6 +299,10 @@ public class PlayerController : MonoBehaviour {
             case ActionButtons.UntieDogs:
                 actionString = "[ENTER] - untie the dogs";
             break;
+
+            case ActionButtons.DrinkWater:
+                actionString = "[ENTER] - drink some water";
+            break;
         }
 
         Game.instance.actionText1.text = actionString;
@@ -308,6 +351,14 @@ public class PlayerController : MonoBehaviour {
             case ActionButtons.UntieDogs:
                 Game.instance.sled.FreeDogs();
                 SetActionButton(ActionButtons.None, null);
+            break;
+
+            case ActionButtons.DrinkWater:
+                thirst += 20;
+
+                if (thirst > maxThirst) {
+                    thirst = maxThirst;
+                }
             break;
         }
     }

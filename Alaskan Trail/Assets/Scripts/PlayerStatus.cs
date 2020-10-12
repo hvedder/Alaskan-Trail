@@ -45,6 +45,17 @@ public class PlayerStatus : MonoBehaviour {
     	hungerText.text = "Hunger " + Mathf.Floor(player.hunger + 0.5f) + " / " + player.maxHunger;
     }
 
+    public void UpdateThirst () {
+    	if (!gameObject.activeSelf) {
+    		return;
+    	}
+
+    	PlayerController player = Game.instance.player;
+
+    	thirstBar.transform.localScale = new Vector3(player.thirst / (player.maxThirst * 1.0f), 1, 1);
+    	thirstText.text = "Thirst " + Mathf.Floor(player.thirst + 0.5f) + " / " + player.maxThirst;
+    }
+
     private void UpdateStats () {
     	PlayerController player = Game.instance.player;
 

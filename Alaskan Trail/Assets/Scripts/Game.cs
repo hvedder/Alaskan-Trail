@@ -19,6 +19,8 @@ public class Game : MonoBehaviour {
     public Sled sled;
     public Dog[] dogs;
 
+    public GameObject water;
+    public GameObject waterEffect;
     public GameObject pointer;
 
 	[Header("Menus")]
@@ -85,6 +87,11 @@ public class Game : MonoBehaviour {
         instance.pointer.transform.LookAt(destination.transform);
 
         return instance.pointer.transform.eulerAngles;
+    }
+
+    public static void ToggleWater () {
+        instance.waterEffect.SetActive(!instance.waterEffect.activeSelf);
+        instance.water.SetActive(!instance.water.activeSelf);
     }
 }
 

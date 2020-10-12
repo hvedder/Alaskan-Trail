@@ -132,6 +132,7 @@ public class Sled : MonoBehaviour {
         if (point == 0) {
             mountObjects[0].GetComponent<PlayerController>().mounted = false;
             Game.instance.player.SetActionButton(ActionButtons.MountSled, null);
+            Game.instance.player.transform.eulerAngles = new Vector3(0, Game.instance.player.transform.eulerAngles.y, 0);
         }
 
         mountObjects[point] = null;
