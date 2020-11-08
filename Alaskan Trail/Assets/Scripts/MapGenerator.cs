@@ -10,8 +10,11 @@ public class MapGenerator : MonoBehaviour {
 	public GameObject plane;
     public GameObject terrain;
     public GameObject tree;
+    public GameObject bush;
+    public GameObject bushBerries;
 
 	public GameObject[,] mapPlanes;
+    public List<Vector4>[,] treeSpots;
 
     private Color32[] whites;
     private Color32[] browns;
@@ -61,10 +64,14 @@ public class MapGenerator : MonoBehaviour {
     public void GenerateMap (int amountX, int amountZ, int sizeX, int sizeZ, float scale) {
 
     	mapPlanes = new GameObject[amountX, amountZ];
+        treeSpots = new List<Vector4>[amountX, amountZ];
+
     	Wave[] waves = GenerateWaves(10);
 
     	for (int x = 0; x < amountX; x++) {
     		for (int z = 0; z < amountZ; z++) {
+                treeSpots[x, z] = new List<Vector4>();
+
     			mapPlanes[x, z] = (GameObject)Instantiate(plane, Vector3.zero, new Quaternion(0, 0, 0, 0));
                 mapPlanes[x, z].transform.localScale = new Vector3(planeScale, planeScale / 2.0f, planeScale);
 
@@ -95,17 +102,16 @@ public class MapGenerator : MonoBehaviour {
 
             GameObject tempPlane = mapPlanes[xPos, zPos];
 
-            GenerateTrees(new Vector3(tempPlane.transform.position.x, 60, tempPlane.transform.position.z), 350, 15);
+            GenerateTrees(new Vector3(tempPlane.transform.position.x, 60, tempPlane.transform.position.z), 350, 10);   
         }
+
+        InstantiateTrees();
 
         for (int x = 0; x < amountX; x++) {
             for (int z = 0; z < amountZ; z++) {
                 mapPlanes[x, z].SetActive(false);
             }
         }
-
-        // Debug.Log(mapPlanes[0, 0].GetComponent<MeshFilter>().mesh.vertexCount);
-        // Debug.Log(mapPlanes[0, 0].GetComponent<MeshCollider>().sharedMesh.vertexCount);
     }
 
     public float[,] GenerateHeightMap (int sizeX, int sizeZ, float scale, float offsetX, float offsetZ, Wave[] waves) {
@@ -281,10 +287,40 @@ public class MapGenerator : MonoBehaviour {
 
                 Vector3 treePos = col.transform.position + new Vector3(vertices[index].x * planeScale, vertices[index].y * planeScale / 2, vertices[index].z * planeScale);
 
-                GameObject newTree = (GameObject)Instantiate(tree, treePos, new Quaternion(0, 0, 0, 0));
-                newTree.transform.localScale = new Vector3(3, Random.Range(3.0f, 5.0f), 3);
-                newTree.transform.SetParent(col.transform);
+                int treeType = 0;
+
+                if (Random.Range(0, 10) == 7) {
+                    treeType = 1;
+                }
+
+                treeSpots[(int)(col.transform.position.x / planeScale / 10.0f), (int)(col.transform.position.z / planeScale / 10.0f)].Add(new Vector4(treePos.x, treePos.y, treePos.z, treeType));
+
+                // GameObject newTree = (GameObject)Instantiate(tree, treePos, new Quaternion(0, 0, 0, 0));
+                // newTree.transform.localScale = new Vector3(3, Random.Range(3.0f, 5.0f), 3);
+                // newTree.transform.SetParent(col.transform);
             }
+        }
+    }
+
+    private void InstantiateTrees () {
+        // Instantiate Pooled Trees
+        for (int i = 0; i < 1500; i++) {
+            GameObject newTree = (GameObject)Instantiate(tree, Vector3.zero, new Quaternion(0, 0, 0, 0));
+            newTree.transform.localScale = new Vector3(3, Random.Range(3.0f, 5.0f), 3);
+            newTree.transform.SetParent(Game.instance.trees.transform);
+            newTree.SetActive(false);
+
+            Game.instance.pooledTrees.Add(newTree);
+        }
+
+        // Instantiate Pooled Bushes
+        for (int i = 0; i < 200; i++) {
+            GameObject newBush = (GameObject)Instantiate(bush, Vector3.zero, new Quaternion(0, 0, 0, 0));
+            // newTree.transform.localScale = new Vector3(3, Random.Range(3.0f, 5.0f), 3);
+            newBush.transform.SetParent(Game.instance.trees.transform);
+            newBush.SetActive(false);
+
+            Game.instance.pooledBushes.Add(newBush);
         }
     }
 

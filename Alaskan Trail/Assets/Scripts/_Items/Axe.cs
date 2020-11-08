@@ -22,12 +22,18 @@ public class Axe : MonoBehaviour, HeldItem {
     	chopped = true;
 
     	PlayerController player = Game.instance.player;
-    	Collider[] colliders = Physics.OverlapSphere(player.mainCam.transform.position + (player.mainCam.transform.forward * 2), 0.5f);
+    	Collider[] colliders = Physics.OverlapSphere(player.mainCam.transform.position + (player.mainCam.transform.forward * 1.5f), 1.25f);
 
     	foreach (Collider col in colliders) {
+            if (col.GetComponent<Damagable>() != null) {
+                col.GetComponent<Damagable>().TakeDamage(10, player.mainCam.transform.forward);
+            }
+
     		if (col.tag != "Tree") {
     			continue;
     		}
+
+            Game.Sound(3 + Random.Range(0, 2), true);
 
     		if (col.GetComponent<Rigidbody>() == null) {
     			col.transform.SetParent(null);

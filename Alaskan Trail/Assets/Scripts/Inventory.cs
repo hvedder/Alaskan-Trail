@@ -48,11 +48,35 @@ public class Inventory : MonoBehaviour {
     		}
 
     		items.Remove(itemID);
-    		items.Add(itemID, currentAmount);
+
+            if (currentAmount > 0) {
+    		   items.Add(itemID, currentAmount);
+            }
     	}
     	else {
     		items.Add(itemID, amount);
     	}
+    }
+
+    public void RemoveItems (int itemID, int amount) {
+        int itemAmount = items[itemID];
+
+        itemAmount -= amount;
+
+        if (itemAmount < 0) {
+            itemAmount = 0;
+        }
+
+        items[itemID] = itemAmount;
+    }
+
+    public int GetItemCount (int itemID) {
+
+        if (!items.ContainsKey(itemID)) {
+            return 0;
+        }
+
+        return items[itemID];
     }
 
     // Opens the player's inventory

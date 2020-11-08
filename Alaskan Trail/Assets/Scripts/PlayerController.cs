@@ -11,7 +11,7 @@ public enum ActionButtons {
     DrinkWater = 5
 }
 
-public class PlayerController : MonoBehaviour {
+public class PlayerController : MonoBehaviour, Damagable {
 
     public float health;
     public float maxHealth;
@@ -49,6 +49,7 @@ public class PlayerController : MonoBehaviour {
 
     private bool underWater;
     private bool thirstRange;
+    private bool dead = false;
 	
     // Start is called before the first frame update
     void Start () {
@@ -73,13 +74,19 @@ public class PlayerController : MonoBehaviour {
 
     // Update is called once per frame
     void Update () {
-        hunger -= (Time.deltaTime * 0.002f);
-        thirst -= (Time.deltaTime * 0.004f);
+        if (dead) {
+            rb.velocity = new Vector3(0, 0, 0);
+
+            return;
+        }
+
+        hunger -= (Time.deltaTime * 0.15f);
+        thirst -= (Time.deltaTime * 0.3f);
         // hunger -= (Time.deltaTime * 5);
         
         if (hunger < 0) {
             hunger = 0;
-            health -= Time.deltaTime * 0.003f;
+            health -= Time.deltaTime * 0.75f;
 
             // health -= (Time.deltaTime * 1);
             Game.instance.playerStatus.UpdateHealth();
@@ -87,10 +94,20 @@ public class PlayerController : MonoBehaviour {
 
         if (thirst < 0) {
             thirst = 0;
-            health -= Time.deltaTime * 0.003f;
+            health -= Time.deltaTime * 0.1f;
 
             // health -= (Time.deltaTime * 1);
             Game.instance.playerStatus.UpdateHealth();
+        }
+
+        if (hunger > 90 && health < maxHealth) {
+            health += Time.deltaTime * 0.5f;
+
+            Game.instance.playerStatus.UpdateHealth();
+        }
+
+        if (health <= 0) {
+            Die();
         }
 
         Game.instance.playerStatus.UpdateHunger();
@@ -176,6 +193,10 @@ public class PlayerController : MonoBehaviour {
 
     void FixedUpdate () {
 
+        if (dead) {
+            return;
+        }
+
         if (mounted) {
             Game.instance.sled.UpdateControls();
 
@@ -237,6 +258,10 @@ public class PlayerController : MonoBehaviour {
     }
 
     void LateUpdate () {
+        if (dead) {
+            return;
+        }
+
         float xRotation = mainCam.transform.localEulerAngles.x + (Input.GetAxis("Mouse Y") * -3);
 
         if (xRotation > 90 && xRotation < 180) {
@@ -309,6 +334,22 @@ public class PlayerController : MonoBehaviour {
         Game.instance.actionText2.text = actionString;
     }
 
+    public void SetActionButton (ActionButtons newButton, GameObject newObject, string actionString) {
+        actionButton = newButton;
+        actionObject = newObject;
+
+        Game.instance.actionText1.text = actionString;
+        Game.instance.actionText2.text = actionString;
+    }
+
+    public void AddHunger (int amount) {
+        hunger += amount;
+
+        if (hunger > maxHunger) {
+            hunger = maxHunger;
+        }
+    }
+
     private void Jump () {
         if (!grounded) {
             return;
@@ -361,6 +402,30 @@ public class PlayerController : MonoBehaviour {
                 }
             break;
         }
+    }
+
+    public void TakeDamage (int damage, Vector3 direction) {
+
+        Game.Sound(0, true);
+
+        health -= damage;
+
+        if (health <= 0) {
+            Die();
+        }
+        else {
+            Game.instance.DamageScreen();
+        }
+    }
+
+    private void Die () {
+        dead = true;
+
+        rb.velocity = new Vector3(0, 0, 0);
+        Cursor.visible = true;
+        Cursor.lockState = CursorLockMode.None;
+
+        Game.instance.DeathScreen();
     }
 }
 

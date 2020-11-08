@@ -6,6 +6,7 @@ public class AnimatedLimb : MonoBehaviour {
 
 	public bool animating;
 	public int currentStep;
+	public float stepTime;
 
 	private List<AnimationStep> animationSteps = new List<AnimationStep>();
 	private AnimationStep origin;
@@ -13,6 +14,8 @@ public class AnimatedLimb : MonoBehaviour {
 	private float posSpeed;
 	private float rotSpeed;
 	private float scaleSpeed;
+
+	public bool loop;
 
     // Start is called before the first frame update
     void Start () {
@@ -29,11 +32,20 @@ public class AnimatedLimb : MonoBehaviour {
         transform.localEulerAngles = Vector3.MoveTowards(transform.localEulerAngles, origin.rotation + animationSteps[currentStep].rotation, rotSpeed * Time.deltaTime);
         transform.localScale = Vector3.MoveTowards(transform.localScale, origin.scale + animationSteps[currentStep].scale, scaleSpeed * Time.deltaTime);
 
-        if (CheckForStepEnd()) {
+        stepTime -= Time.deltaTime;
+
+        if (stepTime <= 0) {
         	currentStep++;
 
         	if (currentStep >= animationSteps.Count) {
-        		animating = false;
+        		if (loop) {
+        			currentStep = 0;
+
+        			CalculateSpeeds(currentStep);
+        		}
+        		else {
+        			animating = false;
+        		}
         	}
         	else {
         		CalculateSpeeds(currentStep);
@@ -49,7 +61,17 @@ public class AnimatedLimb : MonoBehaviour {
     	CalculateSpeeds(0);
     }
 
+    public void Stop () {
+    	animating = false;
+
+    	transform.localPosition = origin.position;
+    	transform.localEulerAngles = origin.rotation;
+    	transform.localScale = origin.scale;
+    }
+
     private void CalculateSpeeds (int step) {
+    	stepTime = animationSteps[step].time;
+
     	if (animationSteps[step].time > 0) {
     		posSpeed = Vector3.Distance(transform.localPosition, origin.position + animationSteps[step].position) / animationSteps[step].time;
     		rotSpeed = Vector3.Distance(transform.localEulerAngles, origin.rotation + animationSteps[step].rotation)  / animationSteps[step].time;

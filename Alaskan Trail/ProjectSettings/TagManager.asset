@@ -6,6 +6,8 @@ TagManager:
   tags:
   - Ground
   - Tree
+  - Bush
+  - Bear
   layers:
   - Default
   - TransparentFX

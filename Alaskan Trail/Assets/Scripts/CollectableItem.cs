@@ -5,6 +5,7 @@ using UnityEngine;
 public class CollectableItem : MonoBehaviour {
 
 	public int itemID;
+   public string actionString;
 
 	public void PickUp () {
 		Game.instance.player.inventory.AddItems(itemID, 1);
@@ -18,7 +19,12 @@ public class CollectableItem : MonoBehaviour {
    			return;
    		}
 
-   		Game.instance.player.SetActionButton(ActionButtons.PickUp, gameObject);
+         if (actionString == "") {
+   	      Game.instance.player.SetActionButton(ActionButtons.PickUp, gameObject);
+         }
+         else {
+            Game.instance.player.SetActionButton(ActionButtons.PickUp, gameObject, actionString);
+         }
    	}
 
    	void OnTriggerExit (Collider other) {
@@ -27,7 +33,7 @@ public class CollectableItem : MonoBehaviour {
    		}
 
    		if (Game.instance.player.actionObject == gameObject) {
-   			Game.instance.player.SetActionButton(ActionButtons.None, null);
+            Game.instance.player.SetActionButton(ActionButtons.None, null);
    		}
    	}
 }
