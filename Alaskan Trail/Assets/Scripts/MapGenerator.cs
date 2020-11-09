@@ -24,7 +24,7 @@ public class MapGenerator : MonoBehaviour {
     // Start is called before the first frame update
     void Start () {
         InitializeColors();
-        GenerateMap(30, 30, 11, 11, 25);
+        GenerateMap(20, 20, 11, 11, 25);
 
         Game.instance.mapGenerated = true;
     }
@@ -102,7 +102,7 @@ public class MapGenerator : MonoBehaviour {
 
             GameObject tempPlane = mapPlanes[xPos, zPos];
 
-            GenerateTrees(new Vector3(tempPlane.transform.position.x, 60, tempPlane.transform.position.z), 350, 10);   
+            GenerateTrees(new Vector3(tempPlane.transform.position.x, 60, tempPlane.transform.position.z), 300, 6);   
         }
 
         InstantiateTrees();
