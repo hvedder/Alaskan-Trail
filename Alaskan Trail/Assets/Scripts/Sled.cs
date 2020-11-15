@@ -38,6 +38,11 @@ public class Sled : MonoBehaviour {
         if (Input.GetKeyDown("space") && mountObjects[0] != null) {
             UnMount(0);
         }
+
+        if (mountObjects[0] != null) {
+			mountObjects[0].transform.localPosition = new Vector3(0, 0, 0);
+        	mountObjects[0].transform.localEulerAngles = new Vector3(0, 0, 0);
+        }
     }
 
     void FixedUpdate () {
@@ -112,9 +117,12 @@ public class Sled : MonoBehaviour {
         mountConstraints[point] = mountRB.constraints;
         mountRB.constraints = RigidbodyConstraints.None;
 
-        PlayerController player = mountObject.GetComponent<PlayerController>();
+        // PlayerController player = null;
+        Component component = null;
 
-        if (player != null) {
+        if (mountObject.TryGetComponent(typeof(PlayerController), out component)) {
+            PlayerController player = (PlayerController)component;
+
             player.mounted = true;
             Game.instance.player.SetActionButton(ActionButtons.None, null);
         }
